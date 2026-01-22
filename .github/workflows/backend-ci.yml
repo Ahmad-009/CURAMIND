@@ -1,8 +1,17 @@
-name: CURAMIND CI Pipeline
+name: Backend pipeline
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "/backend/**"
+      - ".github/workflows/backend-ci.yml"
   push:
     branches:
       - main
+    paths:
+      - "/backend/**"
+      - ".github/workflows/backend-ci.yml"
   workflow_dispatch:
 defaults:
   run:
