@@ -5,9 +5,11 @@ from fastapi import FastAPI, Response
 
 app = FastAPI()
 
+
 @app.get("/")
 def process():
     return {"status": "OK!!!"}
+
 
 @app.get("/custom")
 def custom_header_endpoint(response: Response):
