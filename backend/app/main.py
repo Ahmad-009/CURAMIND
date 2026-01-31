@@ -1,18 +1,13 @@
 # import modules
 # make the api endpoint
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 app = FastAPI()
-
 
 @app.get("/")
 def process():
     return {"status": "OK!!!"}
-
-
-from fastapi import FastAPI, Response
-
 
 @app.get("/custom")
 def custom_header_endpoint(response: Response):
