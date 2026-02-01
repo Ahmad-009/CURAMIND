@@ -1,10 +1,10 @@
-import requests
+from fastapi.testclient import TestClient
+from app.main import app
 
-# response = requests.get('http://localhost:8000')
-# print(response.json())
-# print(response.status_code)
-# print(response.headers)
+client = TestClient(app)
 
-response2 = requests.get("http://localhost:8000/custom")
-print(response2.json())
-print(response2.headers)
+
+def test_health_check():
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"status": "OK!!!"}
