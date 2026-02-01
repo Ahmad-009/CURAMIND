@@ -42,6 +42,8 @@ jobs:
 
       - name: check logic using flake8
         run: flake8 .
+      - name: smoke test
+        run: pytest
 
       - name: setup buildx
         if: github.event_name == 'push'
