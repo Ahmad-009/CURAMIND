@@ -1,0 +1,23 @@
+# --- Python Junk (Compiled files) ---
+__pycache__/
+*.py[cod]
+*.so
+
+# --- Virtual Environment (Heavy, do not upload!) ---
+.venv/
+venv/
+env/
+
+# --- Secrets (CRITICAL SECURITY) ---
+.env
+.env.local
+
+# --- Testing Cache ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Editor Settings (Optional, keeps repo clean) ---
+.vscode/
+.idea/
+.DS_Store
