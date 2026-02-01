@@ -10,6 +10,8 @@ on:
   push:
     branches:
       - main
+    tags:
+      - "v*"
     paths:
       - "backend/**"
       - ".github/workflows/backend-ci.yml"
@@ -42,6 +44,7 @@ jobs:
 
       - name: check logic using flake8
         run: flake8 .
+
       - name: smoke test
         run: pytest
 
@@ -49,18 +52,32 @@ jobs:
         if: github.event_name == 'push'
         uses: docker/setup-buildx-action@v3
 
-      - name: login to Docker Hub and push image
+      - name: login to Docker Hub
         if: github.event_name == 'push'
         uses: docker/login-action@v3
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: build docker image and push it to dockerhub
+      - name: extract metadata (tags, labels)
         if: github.event_name == 'push'
-        run: |
-          docker buildx build --push \
-          -t ${{ vars.DOCKERHUB_USERNAME }}/curamind-backend:${{ github.sha }} .
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.DOCKERHUB_USERNAME }}/curamind-backend
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha
+            type=ref,event=branch
+
+      - name: build and push docker image
+        if: github.event_name == 'push'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
 
       - name: slack notification
         if: always()
