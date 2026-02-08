@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>QA Console — Advanced Medical QA</title>
+    <meta name="description" content="Ask a clinical question with patient context and advanced options." />
+    <style>
+        :root {
+            --brown-900: #23160f;
+            --brown-800: #2b1b12;
+            --off-white: #F8F5F0;
+            --off-white-2: #F2EEE7;
+            --lime: #32CD32;
+            --lime-700: #2EB82E;
+            --lime-900: #249F24;
+            --ink: #1b1b1b;
+            --muted: #6f6a63;
+            --danger: #D7263D;
+            --chip: #efe9df;
+            --chip-border: #e3d9cc;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--brown-900);
+            color: var(--off-white);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial
+        }
+
+        .wrap {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto
+        }
+
+        header,
+        footer {
+            padding: 16px 20px
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .brand__logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, var(--brown-800), #120b07);
+            border: 1px solid #3a271d;
+            box-shadow: inset 0 0 0 1px #1a110c
+        }
+
+        .brand__name {
+            font-weight: 600;
+            letter-spacing: .2px
+        }
+
+        main {
+            padding: 24px 16px 48px;
+            display: grid;
+            gap: 18px
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px
+        }
+
+        @media(min-width:980px) {
+            .grid {
+                grid-template-columns: 2fr 1fr
+            }
+        }
+
+        .card {
+            background: var(--off-white);
+            color: var(--ink);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e7e0d5;
+            overflow: hidden
+        }
+
+        .card__head {
+            background: linear-gradient(180deg, #fbfaf7, var(--off-white));
+            padding: 22px 24px;
+            border-bottom: 1px solid #eee6dc
+        }
+
+        .card__title {
+            margin: 0;
+            color: var(--brown-800);
+            font-size: 1.2rem
+        }
+
+        .card__sub {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: .95rem
+        }
+
+        .card__body {
+            padding: 20px 24px;
+            display: grid;
+            gap: 16px
+        }
+
+        label {
+            font-size: .95rem;
+            font-weight: 650;
+            color: var(--brown-800)
+        }
+
+        textarea,
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ded6cb;
+            background: var(--off-white);
+            color: var(--ink);
+            outline: none;
+            transition: box-shadow .15s ease, border-color .15s ease
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical
+        }
+
+        textarea::placeholder,
+        input::placeholder {
+            color: #9a948a
+        }
+
+        textarea:focus,
+        input:focus,
+        select:focus {
+            border-color: var(--lime);
+            box-shadow: 0 0 0 4px rgba(50, 205, 50, .25)
+        }
+
+        .row {
+            display: grid;
+            gap: 12px
+        }
+
+        @media(min-width:700px) {
+            .row--2 {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: .9rem
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            cursor: pointer;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            letter-spacing: .2px;
+            transition: transform .05s ease, box-shadow .2s ease, background .2s ease
+        }
+
+        .btn--primary {
+            background: var(--lime);
+            color: #0d2a0d;
+            box-shadow: 0 8px 18px rgba(50, 205, 50, .25)
+        }
+
+        .btn--primary:hover {
+            background: var(--lime-700)
+        }
+
+        .btn--primary:active {
+            background: var(--lime-900);
+            transform: translateY(1px)
+        }
+
+        .btn--ghost {
+            background: transparent;
+            color: var(--brown-800);
+            border: 1px dashed #cfc6b8
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 8px
+        }
+
+        .summary-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 10px
+        }
+
+        .summary-item {
+            background: var(--off-white-2);
+            border: 1px solid #e6ded3;
+            border-radius: 12px;
+            padding: 12px 14px
+        }
+
+        .summary-item h4 {
+            margin: 0 0 4px;
+            font-size: .95rem;
+            color: var(--brown-800)
+        }
+
+        .summary-item p {
+            margin: 0;
+            color: var(--ink);
+            font-size: .95rem
+        }
+
+        footer {
+            color: #d9d0c6;
+            font-size: .92rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .build {
+            opacity: .85
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--off-white-2);
+            border: 1px solid #e6ded3;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .85rem;
+            color: var(--ink)
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header aria-label="Application header">
+            <div class="brand">
+                <div class="brand__logo" aria-hidden="true"></div>
+                <div class="brand__name">Advanced Medical QA</div>
+            </div>
+        </header>
+
+        <main>
+            <div class="grid">
+                <!-- Left: Question & Options -->
+                <section class="card" aria-label="QA Console">
+                    <div class="card__head">
+                        <h1 class="card__title">Ask a Clinical Question</h1>
+                        <p class="card__sub">Your question will be answered using the active patient context and latest
+                            sources.</p>
+                    </div>
+                    <div class="card__body">
+                        <div class="field">
+                            <label for="question">Question</label>
+                            <textarea id="question"
+                                placeholder="e.g., What is first-line therapy for a 65-year-old with hypertension and T2D?"></textarea>
+                            <div class="hint">Keep it specific—mention key conditions or medications to improve
+                                retrieval.</div>
+                        </div>
+
+                        <div class="row row--2">
+                            <div class="field">
+                                <label for="temporal">Temporal cutoff</label>
+                                <select id="temporal">
+                                    <option value="latest" selected>Use latest evidence</option>
+                                    <option value="since-2024">Prioritize 2024+</option>
+                                    <option value="since-2023">Prioritize 2023+</option>
+                                    <option value="user-set">Custom (set date below)</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="cutoffDate">Custom cutoff (optional)</label>
+                                <input id="cutoffDate" type="date" />
+                            </div>
+                        </div>
+
+                        <div class="row row--2">
+                            <div class="field">
+                                <label for="safety">Safety mode</label>
+                                <select id="safety">
+                                    <option value="strict" selected>Strict (DDI & contraindications enforced)</option>
+                                    <option value="balanced">Balanced</option>
+                                    <option value="lenient">Lenient</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="explain">Explainability</label>
+                                <select id="explain">
+                                    <option value="per-sentence" selected>Per-sentence citations</option>
+                                    <option value="paragraph">Per-paragraph citations</option>
+                                    <option value="minimal">Minimal</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="actions">
+                            <button class="btn btn--ghost" id="clearBtn">Clear</button>
+                            <button class="btn btn--primary" id="askBtn">Get Answer</button>
+                        </div>
+
+                        <div class="hint" id="statusHint">Prototype only — no backend call yet.</div>
+                    </div>
+                </section>
+
+                <!-- Right: Context Preview -->
+                <aside class="card" aria-label="Context Summary">
+                    <div class="card__head">
+                        <h2 class="card__title">Context Summary</h2>
+                        <p class="card__sub">Loaded from local storage if available.</p>
+                    </div>
+                    <div class="card__body">
+                        <ul class="summary-list" id="summaryList"></ul>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                            <span class="badge" id="roleBadge" title="Role"></span>
+                            <span class="badge" id="temporalBadge" title="Temporal behavior">Temporal: Latest</span>
+                            <span class="badge" id="safetyBadge" title="Safety mode">Safety: Strict</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <footer aria-label="Application footer">
+            <div>© <span id="year"></span> Advanced Medical QA — Prototype</div>
+            <div class="build">Build v0.1 • Stand‑alone</div>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            const year = document.getElementById('year'); year.textContent = new Date().getFullYear();
+
+            // Load patient context (if set previously)
+            function loadContext() {
+                try {
+                    const raw = localStorage.getItem('amqa_context');
+                    return raw ? JSON.parse(raw) : null;
+                } catch (e) { return null; }
+            }
+            function loadRole() {
+                try { return localStorage.getItem('amqa_role') || 'unknown'; } catch (e) { return 'unknown'; }
+            }
+            function summaryLine(title, content) {
+                const li = document.createElement('li');
+                li.className = 'summary-item';
+                const h = document.createElement('h4'); h.textContent = title;
+                const p = document.createElement('p'); p.textContent = content || '—';
+                li.appendChild(h); li.appendChild(p);
+                return li;
+            }
+            const sum = document.getElementById('summaryList');
+            const ctx = loadContext();
+            if (ctx) {
+                sum.appendChild(summaryLine('Demographics', `Age ${ctx.age || '—'}, Sex ${ctx.sex || '—'}${ctx.weight ? `, ${ctx.weight} kg` : ''}`));
+                sum.appendChild(summaryLine('Conditions', (ctx.conditions || []).map(c => c.code ? `${c.name} [${c.code}]` : c.name).join(', ') || '—'));
+                sum.appendChild(summaryLine('Medications', (ctx.medications || []).map(m => m.dose ? `${m.name} (${m.dose})` : m.name).join(', ') || '—'));
+                sum.appendChild(summaryLine('Allergies', (ctx.allergies || []).join(', ') || '—'));
+                sum.appendChild(summaryLine('Notes', ctx.notes || '—'));
+            } else {
+                sum.appendChild(summaryLine('No stored context', 'Use the Patient Context page to add details.'));
+            }
+
+            // Badges
+            const roleBadge = document.getElementById('roleBadge');
+            roleBadge.textContent = `Role: ${loadRole()}`;
+            const temporalSel = document.getElementById('temporal');
+            const safetySel = document.getElementById('safety');
+            const temporalBadge = document.getElementById('temporalBadge');
+            const safetyBadge = document.getElementById('safetyBadge');
+            temporalSel.addEventListener('change', () => {
+                temporalBadge.textContent = 'Temporal: ' + (temporalSel.value === 'latest' ? 'Latest' :
+                    temporalSel.value.startsWith('since-') ? temporalSel.value.replace('since-', 'Since ').toUpperCase() : 'Custom');
+            });
+            safetySel.addEventListener('change', () => { safetyBadge.textContent = 'Safety: ' + safetySel.options[safetySel.selectedIndex].text; });
+
+            // Buttons
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                document.getElementById('question').value = '';
+                document.getElementById('cutoffDate').value = '';
+                temporalSel.value = 'latest';
+                safetySel.value = 'strict';
+                document.getElementById('explain').value = 'per-sentence';
+                temporalBadge.textContent = 'Temporal: Latest';
+                safetyBadge.textContent = 'Safety: Strict';
+            });
+
+            document.getElementById('askBtn').addEventListener('click', () => {
+                // Placeholder: later we’ll save question & options to storage and navigate to AnswerEvidence.html
+                const q = (document.getElementById('question').value || '').trim();
+                const cutoff = document.getElementById('cutoffDate').value || '';
+                const payload = {
+                    question: q,
+                    options: {
+                        temporal: temporalSel.value,
+                        cutoffDate: cutoff,
+                        safety: safetySel.value,
+                        explain: document.getElementById('explain').value
+                    }
+                };
+                try { localStorage.setItem('amqa_query', JSON.stringify(payload)); } catch (e) { }
+                alert('Question captured for prototype.\n(We will wire this to AnswerEvidence.html later.)');
+            });
+        })();
+    </script>
+</body>
+
+</html>

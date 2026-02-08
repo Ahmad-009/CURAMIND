@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>Answer & Evidence — Advanced Medical QA</title>
+    <meta name="description"
+        content="View the generated answer with per-sentence confidence and source attributions." />
+    <style>
+        :root {
+            --brown-900: #23160f;
+            --brown-800: #2b1b12;
+            --off-white: #F8F5F0;
+            --off-white-2: #F2EEE7;
+            --lime: #32CD32;
+            --lime-700: #2EB82E;
+            --lime-900: #249F24;
+            --ink: #1b1b1b;
+            --muted: #6f6a63;
+            --danger: #D7263D;
+            --warn: #E7B416;
+            --ok: #28A745;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--brown-900);
+            color: var(--off-white);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial
+        }
+
+        .wrap {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto
+        }
+
+        header,
+        footer {
+            padding: 16px 20px
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .brand__logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, var(--brown-800), #120b07);
+            border: 1px solid #3a271d;
+            box-shadow: inset 0 0 0 1px #1a110c
+        }
+
+        .brand__name {
+            font-weight: 600;
+            letter-spacing: .2px
+        }
+
+        main {
+            padding: 24px 16px 48px;
+            display: grid;
+            gap: 18px
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px
+        }
+
+        @media(min-width:1100px) {
+            .grid {
+                grid-template-columns: 2fr 1fr
+            }
+        }
+
+        .card {
+            background: var(--off-white);
+            color: var(--ink);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e7e0d5;
+            overflow: hidden
+        }
+
+        .card__head {
+            background: linear-gradient(180deg, #fbfaf7, var(--off-white));
+            padding: 22px 24px;
+            border-bottom: 1px solid #eee6dc
+        }
+
+        .card__title {
+            margin: 0;
+            color: var(--brown-800);
+            font-size: 1.2rem
+        }
+
+        .card__sub {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: .95rem
+        }
+
+        .card__body {
+            padding: 20px 24px;
+            display: grid;
+            gap: 16px
+        }
+
+        .answer {
+            line-height: 1.7
+        }
+
+        .sent {
+            background: var(--off-white-2);
+            border: 1px solid #e6ded3;
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            position: relative
+        }
+
+        .conf {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #eaf8ea;
+            border: 1px solid #c7e9c7;
+            color: #0d2a0d;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: .8rem
+        }
+
+        .cit {
+            color: #0d2a0d;
+            background: #e8f7e8;
+            border: 1px solid #cfeecf;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: .82rem;
+            display: inline-block;
+            margin-top: 8px;
+            cursor: pointer
+        }
+
+        .cit:hover {
+            background: #dbf3db
+        }
+
+        .cit-card {
+            display: none;
+            position: absolute;
+            z-index: 10;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, .2);
+            padding: 10px 12px;
+            max-width: 420px;
+            color: #333
+        }
+
+        .cit:hover+.cit-card {
+            display: block
+        }
+
+        .meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            font-size: .9rem;
+            color: #555
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--off-white-2);
+            border: 1px solid #e6ded3;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: .85rem;
+            color: var(--ink)
+        }
+
+        .alert {
+            background: #fdecea;
+            border: 1px solid #f5c6cb;
+            color: #7a1e26;
+            border-radius: 12px;
+            padding: 12px 14px
+        }
+
+        .ok {
+            background: #eef8ee;
+            border: 1px solid #cfe9cf;
+            color: #0d2a0d;
+            border-radius: 12px;
+            padding: 12px 14px
+        }
+
+        footer {
+            color: #d9d0c6;
+            font-size: .92rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .build {
+            opacity: .85
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header aria-label="Application header">
+            <div class="brand">
+                <div class="brand__logo" aria-hidden="true"></div>
+                <div class="brand__name">Advanced Medical QA</div>
+            </div>
+        </header>
+
+        <main>
+            <div class="grid">
+                <!-- Left: Answer -->
+                <section class="card" aria-label="Answer with evidence">
+                    <div class="card__head">
+                        <h1 class="card__title">Answer</h1>
+                        <p class="card__sub">Evidence‑grounded response with per‑sentence confidence and citations.</p>
+                    </div>
+                    <div class="card__body">
+                        <!-- Meta (question & timestamp) -->
+                        <div class="meta" id="metaRow">
+                            <span class="badge" id="qBadge">Q: (no question loaded)</span>
+                            <span class="badge" id="timeBadge">Generated: —</span>
+                            <span class="badge">Version: v0.1 (prototype)</span>
+                        </div>
+
+                        <!-- Answer sentences (dummy content; replace later) -->
+                        <div class="answer">
+                            <div class="sent">
+                                First‑line therapy may include an ACE‑inhibitor or ARB given the comorbidity profile,
+                                with blood‑pressure targets consistent with recent hypertension guidelines.
+                                <span class="conf">Confidence 0.84</span>
+                                <span class="cit">[PMID: 123456]</span>
+                                <div class="cit-card">
+                                    <strong>Hypertension guideline update 2024</strong><br />
+                                    Smith et al., Journal of Cardio, 2024.<br />
+                                    <em>“For patients with concomitant diabetes, ACEi/ARBs remain
+                                        first‑line.”</em><br />
+                                    <a href="#" target="_blank" rel="noopener">Open source</a>
+                                </div>
+                            </div>
+
+                            <div class="sent">
+                                For T2D, metformin remains foundational unless contraindicated, with GLP‑1 RA or SGLT2
+                                inhibitor considered for cardio‑renal benefit.
+                                <span class="conf">Confidence 0.88</span>
+                                <span class="cit">[PMID: 234567]</span>
+                                <div class="cit-card">
+                                    <strong>ADA Standards of Care 2024</strong><br />
+                                    ADA Panel, Diabetes Care, 2024.<br />
+                                    <em>“Metformin remains first‑line; add GLP‑1 RA / SGLT2i for CV/renal
+                                        risk.”</em><br />
+                                    <a href="#" target="_blank" rel="noopener">Open source</a>
+                                </div>
+                            </div>
+
+                            <div class="sent">
+                                Avoid thiazide diuretics if there is a documented allergy and monitor for potential
+                                drug–drug interactions with current medications.
+                                <span class="conf">Confidence 0.71</span>
+                                <span class="cit">[NCT: 000111]</span>
+                                <div class="cit-card">
+                                    <strong>Trial registry note</strong><br />
+                                    ClinicalTrials.gov; related DDI observations.<br />
+                                    <em>“Specific DDI caution noted in overlapping therapy.”</em><br />
+                                    <a href="#" target="_blank" rel="noopener">Open source</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Right: Safety & Provenance -->
+                <aside class="card" aria-label="Safety and provenance">
+                    <div class="card__head">
+                        <h2 class="card__title">Safety & Provenance</h2>
+                        <p class="card__sub">DDI/contraindication flags and retrieval snapshot.</p>
+                    </div>
+                    <div class="card__body">
+                        <div class="alert" id="safetyBox">
+                            <strong>DDI Warning:</strong> Metformin with contrast media may increase risk of lactic
+                            acidosis. Consider holding before imaging per latest guidance.
+                        </div>
+                        <div class="ok">
+                            <strong>Temporal Check:</strong> Content aligned with 2024 guidelines.
+                        </div>
+
+                        <div class="meta" style="margin-top:12px;">
+                            <span class="badge">Retrieval Snapshot: RS-2026-01-31-001</span>
+                            <span class="badge">Corpus Sync: 2026‑01‑28</span>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <footer aria-label="Application footer">
+            <div>© <span id="year"></span> Advanced Medical QA — Prototype</div>
+            <div class="build">Build v0.1 • Stand‑alone</div>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            const year = document.getElementById('year'); year.textContent = new Date().getFullYear();
+            // Load question from localStorage (captured in QAConsole)
+            try {
+                const raw = localStorage.getItem('amqa_query');
+                if (raw) {
+                    const q = JSON.parse(raw);
+                    const qBadge = document.getElementById('qBadge');
+                    qBadge.textContent = 'Q: ' + (q.question || '—');
+                }
+            } catch (e) { }
+            document.getElementById('timeBadge').textContent = 'Generated: ' + new Date().toLocaleString();
+        })();
+    </script>
+</body>
+
+</html>

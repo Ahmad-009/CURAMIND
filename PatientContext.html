@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>Patient Context — Advanced Medical QA</title>
+    <meta name="description"
+        content="Set patient demographics, conditions, meds, allergies, and codes to personalize retrieval." />
+
+    <style>
+        /* ===== Color System ===== */
+        :root {
+            --brown-900: #23160f;
+            /* darkest brown background */
+            --brown-800: #2b1b12;
+            /* headings / accents on light surface */
+            --off-white: #F8F5F0;
+            /* main surface */
+            --off-white-2: #F2EEE7;
+            /* subtle surface */
+            --lime: #32CD32;
+            /* primary button */
+            --lime-700: #2EB82E;
+            /* hover */
+            --lime-900: #249F24;
+            /* active */
+            --ink: #1b1b1b;
+            /* text on light surface */
+            --muted: #6f6a63;
+            /* secondary text */
+            --danger: #D7263D;
+            /* error text */
+            --chip: #efe9df;
+            /* tag chip bg */
+            --chip-border: #e3d9cc;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+
+            /* === Uniform control sizing === */
+            --ctrl-h: 44px;
+            /* control height */
+            --ctrl-padding-y: 11px;
+            --ctrl-padding-x: 12px;
+        }
+
+        /* ===== Reset & Base ===== */
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--brown-900);
+            color: var(--off-white);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            line-height: 1.5;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        /* ===== Layout ===== */
+        .wrap {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+        }
+
+        header,
+        footer {
+            padding: 16px 20px;
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .brand__logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, var(--brown-800), #120b07);
+            border: 1px solid #3a271d;
+            box-shadow: inset 0 0 0 1px #1a110c;
+        }
+
+        .brand__name {
+            font-weight: 600;
+            letter-spacing: .2px;
+        }
+
+        main {
+            padding: 24px 16px 48px;
+            display: grid;
+            gap: 18px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 18px;
+        }
+
+        @media (min-width: 980px) {
+            .grid {
+                grid-template-columns: 2fr 1fr;
+                align-items: start;
+            }
+        }
+
+        /* ===== Card ===== */
+        .card {
+            background: var(--off-white);
+            color: var(--ink);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e7e0d5;
+            overflow: hidden;
+        }
+
+        .card__head {
+            background: linear-gradient(180deg, #fbfaf7, var(--off-white));
+            padding: 22px 24px;
+            border-bottom: 1px solid #eee6dc;
+        }
+
+        .card__title {
+            margin: 0;
+            color: var(--brown-800);
+            font-size: 1.2rem;
+        }
+
+        .card__sub {
+            margin: 8px 0 0;
+            color: var(--muted);
+            font-size: .95rem;
+        }
+
+        .card__body {
+            padding: 20px 24px;
+            display: grid;
+            gap: 16px;
+        }
+
+        /* ===== Form ===== */
+        .section-title {
+            margin: 10px 0 2px;
+            font-weight: 800;
+            color: var(--brown-800);
+            font-size: .98rem;
+        }
+
+        .row {
+            display: grid;
+            gap: 12px;
+        }
+
+        @media (min-width: 700px) {
+            .row--2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 980px) {
+            .row--3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .field {
+            display: grid;
+            gap: 6px;
+            /* ✅ consistent label-to-input spacing for all fields */
+            align-items: start;
+        }
+
+        label {
+            font-size: .92rem;
+            font-weight: 650;
+            color: var(--brown-800);
+        }
+
+        /* Ensure equal column sizing */
+        .row--3>.field {
+            min-width: 0;
+        }
+
+        /* === Normalize controls so input & select are exactly the same size === */
+        input[type="text"],
+        select {
+            height: var(--ctrl-h);
+            padding: var(--ctrl-padding-y) var(--ctrl-padding-x);
+            border-radius: 10px;
+            border: 1px solid #ded6cb;
+            background: var(--off-white);
+            color: var(--ink);
+            width: 100%;
+            box-sizing: border-box;
+            font: inherit;
+            line-height: 1.2;
+            outline: none;
+            transition: box-shadow .15s ease, border-color .15s ease;
+        }
+
+        /* Keep select stable & style its arrow */
+        select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image:
+                linear-gradient(45deg, transparent 50%, #7b7167 50%),
+                linear-gradient(135deg, #7b7167 50%, transparent 50%),
+                linear-gradient(to right, transparent, transparent);
+            background-position:
+                calc(100% - 18px) calc(50% - 3px),
+                calc(100% - 12px) calc(50% - 3px),
+                calc(100% - 2.2rem) 0;
+            background-size: 6px 6px, 6px 6px, 2.2rem 100%;
+            background-repeat: no-repeat;
+            padding-right: 2.6rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border-radius: 10px;
+            border: 1px solid #ded6cb;
+            background: var(--off-white);
+            color: var(--ink);
+            outline: none;
+            transition: box-shadow .15s ease, border-color .15s ease;
+            font: inherit;
+            line-height: 1.4;
+            min-height: 72px;
+            resize: vertical;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #9a948a;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--lime);
+            box-shadow: 0 0 0 4px rgba(50, 205, 50, 0.25);
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: .85rem;
+        }
+
+        .error {
+            color: var(--danger);
+            font-size: .9rem;
+            display: none;
+        }
+
+        /* ===== Chips (tags) ===== */
+        .chips {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 2px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--chip);
+            border: 1px solid var(--chip-border);
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: .9rem;
+        }
+
+        .chip__x {
+            appearance: none;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: #7b7167;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .chip__x:focus {
+            outline: 2px solid var(--lime);
+            outline-offset: 2px;
+            border-radius: 50%;
+        }
+
+        /* ===== Buttons ===== */
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            cursor: pointer;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            letter-spacing: .2px;
+            transition: transform .05s ease, box-shadow .2s ease, background .2s ease;
+        }
+
+        .btn--primary {
+            background: var(--lime);
+            color: #0d2a0d;
+            box-shadow: 0 8px 18px rgba(50, 205, 50, .25);
+        }
+
+        .btn--primary:hover {
+            background: var(--lime-700);
+        }
+
+        .btn--primary:active {
+            background: var(--lime-900);
+            transform: translateY(1px);
+        }
+
+        .btn--ghost {
+            background: transparent;
+            color: var(--brown-800);
+            border: 1px dashed #cfc6b8;
+        }
+
+        /* ===== Summary Card ===== */
+        .summary-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            gap: 10px;
+        }
+
+        .summary-item {
+            background: var(--off-white-2);
+            border: 1px solid #e6ded3;
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .summary-item h4 {
+            margin: 0 0 4px;
+            font-size: .95rem;
+            color: var(--brown-800);
+        }
+
+        .summary-item p {
+            margin: 0;
+            color: var(--ink);
+            font-size: .95rem;
+        }
+
+        footer {
+            color: #d9d0c6;
+            font-size: .92rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .build {
+            opacity: .85;
+        }
+
+        /* utility */
+        .sr-only {
+            position: absolute !important;
+            height: 1px;
+            width: 1px;
+            overflow: hidden;
+            clip: rect(1px, 1px, 1px, 1px);
+            white-space: nowrap;
+            border: 0;
+            padding: 0;
+            margin: -1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <!-- Header -->
+        <header aria-label="Application header">
+            <div class="brand">
+                <div class="brand__logo" aria-hidden="true"></div>
+                <div class="brand__name">Advanced Medical QA</div>
+            </div>
+        </header>
+
+        <!-- Main -->
+        <main>
+            <div class="grid">
+                <!-- Patient Context Form -->
+                <section class="card" aria-label="Patient context form">
+                    <div class="card__head">
+                        <h1 class="card__title">Patient Context</h1>
+                        <p class="card__sub">Add basic demographics and clinical context to personalize retrieval and
+                            answers.</p>
+                    </div>
+                    <form class="card__body" id="contextForm" novalidate>
+                        <!-- Demographics -->
+                        <div>
+                            <div class="section-title">Demographics</div>
+                            <div class="row row--3">
+                                <div class="field">
+                                    <label for="age">Age (years) <span class="sr-only">(required)</span></label>
+                                    <!-- Typed-only numeric (no steppers) -->
+                                    <input id="age" name="age" type="text" inputmode="numeric" pattern="[0-9]*"
+                                        placeholder="e.g., 65" required aria-required="true"
+                                        aria-describedby="ageErr" />
+                                    <div class="error" id="ageErr">Please enter a valid age (0–120).</div>
+                                </div>
+
+                                <div class="field">
+                                    <label for="sex">Sex</label>
+                                    <select id="sex" name="sex" required aria-describedby="sexErr">
+                                        <option value="" disabled selected>Select</option>
+                                        <option value="female">Female</option>
+                                        <option value="male">Male</option>
+                                        <option value="other">Other / Prefer not to say</option>
+                                    </select>
+                                    <div class="error" id="sexErr">Please select a value.</div>
+                                </div>
+
+                                <div class="field">
+                                    <label for="weight">Weight (kg) <span class="sr-only">(required)</span></label>
+                                    <!-- Typed-only numeric (no steppers) -->
+                                    <input id="weight" name="weight" type="text" inputmode="numeric" pattern="[0-9]*"
+                                        placeholder="e.g., 72" required aria-required="true"
+                                        aria-describedby="weightErr" />
+                                    <div class="error" id="weightErr">Please enter a valid weight (0–400 kg).</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clinical context: Conditions -->
+                        <div>
+                            <div class="section-title">Conditions / Comorbidities</div>
+                            <div class="field">
+                                <label for="condInput">Add condition</label>
+                                <div class="row row--2">
+                                    <input id="condInput" type="text" placeholder="e.g., Hypertension"
+                                        aria-describedby="condHint" />
+                                    <input id="condCode" type="text" placeholder="SNOMED-CT code (optional)" />
+                                </div>
+                                <div class="hint" id="condHint">You can enter a name and (optionally) its SNOMED‑CT
+                                    code. Press Enter to add.</div>
+                            </div>
+                            <div class="chips" id="condChips" aria-live="polite" aria-label="Conditions list"></div>
+                        </div>
+
+                        <!-- Medications -->
+                        <div>
+                            <div class="section-title">Current Medications</div>
+                            <div class="field">
+                                <label for="medInput">Add medication</label>
+                                <div class="row row--2">
+                                    <input id="medInput" type="text" placeholder="e.g., Metformin"
+                                        aria-describedby="medHint" />
+                                    <input id="medDose" type="text" placeholder="Dosage (optional) e.g., 500 mg bid" />
+                                </div>
+                                <div class="hint" id="medHint">Add one at a time; press Enter to create a chip.</div>
+                            </div>
+                            <div class="chips" id="medChips" aria-live="polite" aria-label="Medications list"></div>
+                        </div>
+
+                        <!-- Allergies -->
+                        <div>
+                            <div class="section-title">Allergies</div>
+                            <div class="field">
+                                <label for="allInput">Add allergy</label>
+                                <input id="allInput" type="text" placeholder="e.g., Penicillin"
+                                    aria-describedby="allHint" />
+                                <div class="hint" id="allHint">Press Enter to add an allergy tag.</div>
+                            </div>
+                            <div class="chips" id="allChips" aria-live="polite" aria-label="Allergies list"></div>
+                        </div>
+
+                        <!-- Notes -->
+                        <div>
+                            <div class="section-title">Notes (optional)</div>
+                            <div class="field">
+                                <label for="notes" class="sr-only">Notes</label>
+                                <textarea id="notes" placeholder="Any additional clinical context..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="actions">
+                            <button type="button" class="btn btn--ghost" id="clearBtn">Clear</button>
+                            <button type="submit" class="btn btn--primary" id="continueBtn">Continue to
+                                Questions</button>
+                        </div>
+
+                        <!-- Validation error -->
+                        <div class="error" id="formError" role="alert" style="display:none;">
+                            Please complete required fields (Age, Sex, Weight). Add at least one condition OR medication
+                            for a meaningful context.
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Summary Sidebar -->
+                <aside class="card" aria-label="Context summary">
+                    <div class="card__head">
+                        <h2 class="card__title">Context Summary</h2>
+                        <p class="card__sub">This is what will be sent to the QA engine.</p>
+                    </div>
+                    <div class="card__body">
+                        <ul class="summary-list" id="summaryList">
+                            <!-- Filled by JS -->
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer aria-label="Application footer">
+            <div>© <span id="year"></span> Advanced Medical QA — Prototype</div>
+            <div class="build">Build v0.1 • Context not saved to server (prototype)</div>
+        </footer>
+    </div>
+
+    <!-- Shared helpers (safe to include; page still works if not found) -->
+    <script src="assets/app.js"></script>
+    <script>
+        (function () {
+            const year = document.getElementById('year');
+            year.textContent = new Date().getFullYear();
+
+            // Optional guard
+            try { window.AMQA && AMQA.requireRole && AMQA.requireRole(); } catch (e) { }
+
+            // Elements
+            const form = document.getElementById('contextForm');
+            const age = document.getElementById('age');
+            const sex = document.getElementById('sex');
+            const weight = document.getElementById('weight');
+
+            const condInput = document.getElementById('condInput');
+            const condCode = document.getElementById('condCode');
+            const condChips = document.getElementById('condChips');
+
+            const medInput = document.getElementById('medInput');
+            const medDose = document.getElementById('medDose');
+            const medChips = document.getElementById('medChips');
+
+            const allInput = document.getElementById('allInput');
+            const allChips = document.getElementById('allChips');
+
+            const notes = document.getElementById('notes');
+            const summaryList = document.getElementById('summaryList');
+
+            const formError = document.getElementById('formError');
+            const ageErr = document.getElementById('ageErr');
+            const sexErr = document.getElementById('sexErr');
+            const weightErr = document.getElementById('weightErr');
+
+            // In-memory state (prototype)
+            let state = {
+                age: "", sex: "", weight: "",
+                conditions: [],      // {name, code?}
+                medications: [],     // {name, dose?}
+                allergies: [],       // string[]
+                notes: ""
+            };
+
+            // ---- Age input: digits-only, clamp 0..120 ----
+            function sanitizeAge() {
+                let v = (age.value || '').trim().replace(/\D+/g, '');
+                if (v === '') { age.value = ''; state.age = ''; return; }
+                let n = Number(v);
+                if (n < 0) n = 0;
+                if (n > 120) n = 120;
+                age.value = String(n);
+                state.age = String(n);
+            }
+
+            // ---- Weight input: digits-only, clamp 0..400 ----
+            function sanitizeWeight() {
+                let v = (weight.value || '').trim().replace(/\D+/g, '');
+                if (v === '') { weight.value = ''; state.weight = ''; return; }
+                let n = Number(v);
+                if (n < 0) n = 0;
+                if (n > 400) n = 400;
+                weight.value = String(n);
+                state.weight = String(n);
+            }
+
+            // Helpers
+            function addChip(container, text, meta, onRemove) {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.setAttribute('data-text', text);
+
+                const label = document.createElement('span');
+                label.textContent = meta ? `${text} (${meta})` : text;
+
+                const close = document.createElement('button');
+                close.className = 'chip__x';
+                close.type = 'button';
+                close.setAttribute('aria-label', `Remove ${text}`);
+                close.textContent = '×';
+                close.addEventListener('click', () => {
+                    container.removeChild(chip);
+                    onRemove();
+                    refreshSummary();
+                });
+
+                chip.appendChild(label);
+                chip.appendChild(close);
+                container.appendChild(chip);
+            }
+
+            function clearInputs(...els) { els.forEach(el => el.value = ""); }
+
+            function refreshSummary() {
+                summaryList.innerHTML = '';
+                const push = (title, content) => {
+                    const li = document.createElement('li');
+                    li.className = 'summary-item';
+                    const h = document.createElement('h4'); h.textContent = title;
+                    const p = document.createElement('p'); p.textContent = content || '—';
+                    li.appendChild(h); li.appendChild(p);
+                    summaryList.appendChild(li);
+                };
+
+                push('Demographics', `Age ${state.age || '—'}, Sex ${state.sex || '—'}${state.weight ? ', ' + state.weight + ' kg' : ''}`);
+                push('Conditions', state.conditions.length ? state.conditions.map(c => c.code ? `${c.name} [${c.code}]` : c.name).join(', ') : '—');
+                push('Medications', state.medications.length ? state.medications.map(m => m.dose ? `${m.name} (${m.dose})` : m.name).join(', ') : '—');
+                push('Allergies', state.allergies.length ? state.allergies.join(', ') : '—');
+                push('Notes', state.notes || '—');
+            }
+
+            function show(el) { if (el) el.style.display = 'block'; }
+            function hide(el) { if (el) el.style.display = 'none'; }
+
+            function validate() {
+                let ok = true;
+
+                // Age (required & range-checked)
+                const ageVal = parseInt(age.value, 10);
+                const ageValid = !isNaN(ageVal) && ageVal >= 0 && ageVal <= 120;
+                if (!ageValid) { show(ageErr); ok = false; } else { hide(ageErr); }
+
+                // Sex (required)
+                if (!sex.value) { show(sexErr); ok = false; } else { hide(sexErr); }
+
+                // Weight (required & range-checked)
+                const wVal = parseInt(weight.value, 10);
+                const weightValid = !isNaN(wVal) && wVal >= 0 && wVal <= 400;
+                if (!weightValid) { show(weightErr); ok = false; } else { hide(weightErr); }
+
+                // At least some clinical context (condition or med)
+                const hasContext = state.conditions.length > 0 || state.medications.length > 0;
+
+                if (!ok || !hasContext) {
+                    show(formError);
+                } else {
+                    hide(formError);
+                }
+                return ok && hasContext;
+            }
+
+            // Bind demographics
+            age.addEventListener('input', () => { sanitizeAge(); refreshSummary(); });
+            sex.addEventListener('change', () => { state.sex = sex.value; refreshSummary(); });
+            weight.addEventListener('input', () => { sanitizeWeight(); refreshSummary(); });
+            notes.addEventListener('input', () => { state.notes = notes.value; refreshSummary(); });
+
+            // Add condition (Enter in either field)
+            function addCondition() {
+                const name = condInput.value.trim();
+                const code = condCode.value.trim();
+                if (!name) return;
+                state.conditions.push({ name, code: code || undefined });
+                addChip(condChips, name, code || null, () => {
+                    state.conditions = state.conditions.filter(c => !(c.name === name && (c.code || '') === (code || '')));
+                });
+                clearInputs(condInput, condCode);
+                refreshSummary();
+            }
+            condInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCondition(); } });
+            condCode.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addCondition(); } });
+
+            // Add medication
+            function addMedication() {
+                const name = medInput.value.trim();
+                const dose = medDose.value.trim();
+                if (!name) return;
+                state.medications.push({ name, dose: dose || undefined });
+                addChip(medChips, name, dose || null, () => {
+                    state.medications = state.medications.filter(m => !(m.name === name && (m.dose || '') === (dose || '')));
+                });
+                clearInputs(medInput, medDose);
+                refreshSummary();
+            }
+            medInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addMedication(); } });
+            medDose.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addMedication(); } });
+
+            // Add allergy
+            function addAllergy() {
+                const name = allInput.value.trim();
+                if (!name) return;
+                state.allergies.push(name);
+                addChip(allChips, name, null, () => {
+                    state.allergies = state.allergies.filter(a => a !== name);
+                });
+                clearInputs(allInput);
+                refreshSummary();
+            }
+            allInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addAllergy(); } });
+
+            // Clear form
+            document.getElementById('clearBtn').addEventListener('click', () => {
+                state = { age: "", sex: "", weight: "", conditions: [], medications: [], allergies: [], notes: "" };
+                form.reset();
+                condChips.innerHTML = '';
+                medChips.innerHTML = '';
+                allChips.innerHTML = '';
+                refreshSummary();
+                hide(formError); hide(ageErr); hide(sexErr); hide(weightErr);
+            });
+
+            // Persist + navigate
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if (!validate()) return;
+
+                // Save to storage (prefer AMQA helper if available)
+                try {
+                    if (window.AMQA?.saveLS && window.AMQA?.AMQA_KEYS?.CONTEXT) {
+                        AMQA.saveLS(AMQA.AMQA_KEYS.CONTEXT, state);
+                    } else {
+                        localStorage.setItem('amqa_context', JSON.stringify(state));
+                    }
+                } catch (e) { }
+
+                // Go to QA console
+                try {
+                    if (window.AMQA?.go) AMQA.go('qa'); else window.location.href = 'QAConsole.html';
+                } catch (e) {
+                    window.location.href = 'QAConsole.html';
+                }
+            });
+
+            // Initialize summary
+            refreshSummary();
+        })();
+    </script>
+</body>
+</html>

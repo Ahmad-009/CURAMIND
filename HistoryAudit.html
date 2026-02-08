@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+    <title>History & Audit — Advanced Medical QA</title>
+    <meta name="description" content="Audit trail of queries and outputs for compliance and review." />
+    <style>
+        :root {
+            --brown-900: #23160f;
+            --brown-800: #2b1b12;
+            --off-white: #F8F5F0;
+            --off-white-2: #F2EEE7;
+            --lime: #32CD32;
+            --lime-700: #2EB82E;
+            --lime-900: #249F24;
+            --ink: #1b1b1b;
+            --muted: #6f6a63;
+            --danger: #D7263D;
+            --shadow: 0 10px 30px rgba(0, 0, 0, .35)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%;
+            background: var(--brown-900);
+            color: var(--off-white);
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial
+        }
+
+        .wrap {
+            min-height: 100dvh;
+            display: grid;
+            grid-template-rows: auto 1fr auto
+        }
+
+        header,
+        footer {
+            padding: 16px 20px
+        }
+
+        .brand {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .brand__logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, var(--brown-800), #120b07);
+            border: 1px solid #3a271d;
+            box-shadow: inset 0 0 0 1px #1a110c
+        }
+
+        .brand__name {
+            font-weight: 600;
+            letter-spacing: .2px
+        }
+
+        main {
+            padding: 24px 16px 48px;
+            display: grid;
+            gap: 18px
+        }
+
+        .card {
+            background: var(--off-white);
+            color: var(--ink);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid #e7e0d5;
+            overflow: hidden
+        }
+
+        .card__head {
+            background: linear-gradient(180deg, #fbfaf7, var(--off-white));
+            padding: 22px 24px;
+            border-bottom: 1px solid #eee6dc
+        }
+
+        .card__title {
+            margin: 0;
+            color: var(--brown-800);
+            font-size: 1.2rem
+        }
+
+        .card__body {
+            padding: 20px 24px
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            margin-bottom: 12px
+        }
+
+        .btn {
+            appearance: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-weight: 800;
+            letter-spacing: .2px
+        }
+
+        .btn--primary {
+            background: var(--lime);
+            color: #0d2a0d;
+            box-shadow: 0 8px 18px rgba(50, 205, 50, .25)
+        }
+
+        .btn--ghost {
+            background: transparent;
+            color: var(--brown-800);
+            border: 1px dashed #cfc6b8
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 10px
+        }
+
+        thead th {
+            font-size: .92rem;
+            text-align: left;
+            color: #4a3428;
+            padding: 8px 10px
+        }
+
+        tbody tr {
+            background: var(--off-white-2);
+            border: 1px solid #e6ded3
+        }
+
+        tbody td {
+            padding: 12px 10px;
+            border-top: 1px solid #e6ded3;
+            border-bottom: 1px solid #e6ded3
+        }
+
+        tbody td:first-child {
+            border-left: 1px solid #e6ded3;
+            border-top-left-radius: 10px;
+            border-bottom-left-radius: 10px
+        }
+
+        tbody td:last-child {
+            border-right: 1px solid #e6ded3;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            background: #efe9df;
+            border: 1px solid #e3d9cc;
+            border-radius: 999px;
+            padding: 4px 8px;
+            font-size: .82rem
+        }
+
+        .link {
+            color: #0d2a0d;
+            text-decoration: underline;
+            cursor: pointer
+        }
+
+        footer {
+            color: #d9d0c6;
+            font-size: .92rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+
+        .build {
+            opacity: .85
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <header aria-label="Application header">
+            <div class="brand">
+                <div class="brand__logo" aria-hidden="true"></div>
+                <div class="brand__name">Advanced Medical QA</div>
+            </div>
+        </header>
+
+        <main>
+            <section class="card" aria-label="History & Audit">
+                <div class="card__head">
+                    <h1 class="card__title">History & Audit</h1>
+                </div>
+                <div class="card__body">
+                    <div class="actions">
+                        <button class="btn btn--ghost" id="addDummy">Add Dummy Entry</button>
+                        <button class="btn btn--primary" id="exportCsv">Export CSV</button>
+                    </div>
+                    <div style="overflow:auto">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Role</th>
+                                    <th>Question</th>
+                                    <th>Snapshot</th>
+                                    <th>Answer Version</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer aria-label="Application footer">
+            <div>© <span id="year"></span> Advanced Medical QA — Prototype</div>
+            <div class="build">Build v0.1 • Stand‑alone</div>
+        </footer>
+    </div>
+
+    <script>
+        (function () {
+            const year = document.getElementById('year'); year.textContent = new Date().getFullYear();
+            const key = 'amqa_audit';
+            function load() { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { return []; } }
+            function save(v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { } }
+            function role() { try { return localStorage.getItem('amqa_role') || 'unknown'; } catch (e) { return 'unknown'; } }
+            function render() {
+                const tbody = document.getElementById('rows'); tbody.innerHTML = '';
+                const data = load();
+                data.forEach((r, idx) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+        <td>${r.time}</td>
+        <td><span class="tag">${r.role}</span></td>
+        <td>${r.question || '—'}</td>
+        <td><span class="link" title="Snapshot ID">${r.snapshot}</span></td>
+        <td>${r.version || 'v0.1'}</td>
+        <td>
+          <span class="link" data-act="view" data-idx="${idx}">View</span> |
+          <span class="link" data-act="del" data-idx="${idx}">Delete</span>
+        </td>
+      `;
+                    tbody.appendChild(tr);
+                });
+            }
+            function addDummy() {
+                const data = load();
+                data.unshift({
+                    time: new Date().toLocaleString(),
+                    role: role(),
+                    question: (JSON.parse(localStorage.getItem('amqa_query') || '{}').question) || 'Example question about HTN + T2D',
+                    snapshot: 'RS-' + new Date().toISOString().slice(0, 10).replaceAll('-', '') + '-00' + ((Math.random() * 9 | 0) + 1),
+                    version: 'v0.1'
+                });
+                save(data); render();
+            }
+            function exportCsv() {
+                const rows = load();
+                if (!rows.length) { alert('No rows to export.'); return; }
+                const headers = ['timestamp', 'role', 'question', 'snapshot', 'version'];
+                const csv = [headers.join(',')].concat(rows.map(r => [
+                    `"${r.time.replace(/"/g, '""')}"`,
+                    `"${r.role}"`,
+                    `"${(r.question || '').replace(/"/g, '""')}"`,
+                    `"${r.snapshot}"`,
+                    `"${r.version}"`
+                ].join(','))).join('\n');
+                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = 'audit.csv'; a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }
+
+            document.getElementById('addDummy').addEventListener('click', addDummy);
+            document.getElementById('exportCsv').addEventListener('click', exportCsv);
+            document.getElementById('rows').addEventListener('click', (e) => {
+                const act = e.target.getAttribute('data-act'); if (!act) return;
+                const idx = +e.target.getAttribute('data-idx');
+                const data = load();
+                if (act === 'view') { alert(JSON.stringify(data[idx], null, 2)); }
+                if (act === 'del') { data.splice(idx, 1); save(data); render(); }
+            });
+
+            render();
+        })();
+    </script>
+</body>
+
+</html>
