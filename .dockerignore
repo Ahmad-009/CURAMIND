@@ -1,0 +1,15 @@
+.venv
+venv
+env
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.git
+.gitignore
+.env
+tests/
+.flake8
+.pytest_cache
+.coverage
+htmlcov/

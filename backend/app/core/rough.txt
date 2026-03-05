@@ -1,0 +1,210 @@
+from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.sql import func
+Base = declarative_base()
+
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True) 
+    email = Column(String(255), nullable=False, unique=True)
+    hashed_password = Column(String(255),nullable=False)
+    role = Column(String(255), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+
+
+
+
+
+
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from typing import List
+import random
+import datetime
+
+# Import your database tools
+from app.core.database import engine, get_db
+from app.core import models 
+# CRITICAL: This imports the schemas.py file you just made!
+from app import schemas 
+
+# ==========================================
+# 0. SERVER STARTUP & DATABASE SETUP
+# ==========================================
+
+# 1. Enable Vector Extension (Critical for AI)
+with engine.connect() as connection:
+    connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    connection.commit()
+
+# 2. Create All Tables
+models.Base.metadata.create_all(bind=engine)
+
+app = FastAPI(
+    title="Curamind API",
+    description="Medical RAG Chatbot Backend with Vector Search",
+    version="1.0.0"
+)
+
+# ==========================================
+# 1. AUTHENTICATION (Mock)
+# ==========================================
+@app.post("/auth/signup", tags=["Authentication"], response_model=schemas.Token)
+async def signup(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    # Check if user exists
+    existing_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Create new user
+    new_user = models.User(email=user.email, hashed_password="fakehash123", role=user.role)
+    db.add(new_user)
+    db.commit()
+    return {"access_token": f"token_for_{user.email}", "token_type": "bearer"}
+
+@app.post("/auth/login", tags=["Authentication"], response_model=schemas.Token)
+async def login(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter(models.User.email == user.email).first()
+    if not db_user:
+        raise HTTPException(status_code=400, detail="User not found")
+    return {"access_token": f"valid_token_{db_user.id}", "token_type": "bearer"}
+
+# ==========================================
+# 2. CHAT MODULE
+# ==========================================
+@app.post("/chat/sessions", tags=["Chat"], summary="Start a new Chat")
+async def create_session(user_id: int, db: Session = Depends(get_db)):
+    new_session = models.ChatSession(user_id=user_id, session_name="New Consultation")
+    db.add(new_session)
+    db.commit()
+    db.refresh(new_session)
+    return {"session_id": new_session.id, "created_at": new_session.created_at}
+
+@app.post("/chat/{session_id}/message", tags=["Chat"], response_model=schemas.ChatResponse)
+async def send_message(session_id: int, message: schemas.ChatMessageCreate, db: Session = Depends(get_db)):
+    # 1. Save User Message
+    user_msg = models.ChatMessage(session_id=session_id, sender="user", content=message.content)
+    db.add(user_msg)
+    
+    # 2. Mock AI Logic (In future, this calls the LLM)
+    ai_content = f"Based on the database, '{message.content}' is a known symptom of..."
+    ai_msg = models.ChatMessage(
+        session_id=session_id, 
+        sender="ai", 
+        content=ai_content,
+        citations=[{"title": "Study on Symptoms", "url": "https://pubmed.gov/123"}]
+    )
+    db.add(ai_msg)
+    db.commit()
+    
+    return {
+        "id": ai_msg.id,
+        "sender": "ai",
+        "content": ai_msg.content,
+        "citations": ai_msg.citations,
+        "timestamp": datetime.datetime.now()
+    }
+
+# ==========================================
+# 3. SUPER SEEDER (The 50+ Rows Generator) 🔴
+# ==========================================
+@app.post("/seed_db", tags=["Demo Tools"])
+def seed_database(db: Session = Depends(get_db)):
+    """
+    CLICKS THIS ONCE: Populates DB with 50 Users, Patients, Articles, and Chats.
+    """
+    if db.query(models.User).count() > 10:
+        return {"message": "Database already populated! Skipping."}
+
+    print("🌱 Starting Seed Process...")
+    
+    # Lists for random generation
+    roles = ["student", "researcher", "doctor"]
+    conditions = ["Hypertension", "Diabetes Type 2", "Asthma", "Migraine", "Healthy"]
+    meds = ["Lisinopril", "Metformin", "Albuterol", "Sumatriptan", "None"]
+    
+    # A. Generate 50 Users & Patient Profiles
+    for i in range(1, 51):
+        role = random.choice(roles)
+        email = f"user{i}_{role}@giki.edu"
+        
+        # 1. User
+        user = models.User(email=email, hashed_password="hashed_secret", role=role)
+        db.add(user)
+        db.flush() # Get ID
+
+        # 2. Patient Profile
+        patient = models.PatientProfile(
+            user_id=user.id,
+            age=random.randint(18, 85),
+            sex=random.choice(["Male", "Female"]),
+            chronic_conditions=random.choice(conditions),
+            current_medications=random.choice(meds)
+        )
+        db.add(patient)
+
+        # 3. Chat History
+        session = models.ChatSession(user_id=user.id, session_name=f"Consultation #{i}")
+        db.add(session)
+        db.flush()
+
+        msg1 = models.ChatMessage(session_id=session.id, sender="user", content=f"I am worried about {patient.chronic_conditions}")
+        msg2 = models.ChatMessage(session_id=session.id, sender="ai", content="I found 3 relevant papers on PubMed.")
+        db.add_all([msg1, msg2])
+
+    # B. Generate 50 Medical Articles (Vector Ready)
+    categories = ["research_paper", "clinical_trial", "drug_guide"]
+    for i in range(1, 51):
+        # Fake Vector (768 dimensions)
+        fake_vector = [random.random() for _ in range(768)]
+        
+        article = models.MedicalArticle(
+            title=f"Clinical Study #{i}: Treatment of {random.choice(conditions)}",
+            url=f"https://pubmed.ncbi.nlm.nih.gov/4500{i}",
+            pmid=f"4500{i}",
+            content=f"Abstract: This study analyzes the effects of {random.choice(meds)}...",
+            category=random.choice(categories),
+            embedding=fake_vector
+        )
+        db.add(article)
+
+    db.commit()
+    return {"message": "✅ Database Successfully Seeded with 50+ records!"}
+
+# ==========================================
+# 4. DATA VISUALIZERS (GET Endpoints) 👁️
+# ==========================================
+@app.get("/users", tags=["Live Data"])
+def get_users(db: Session = Depends(get_db)):
+    return db.query(models.User).all()
+
+@app.get("/patients", tags=["Live Data"])
+def get_patients(db: Session = Depends(get_db)):
+    return db.query(models.PatientProfile).all()
+
+@app.get("/chats", tags=["Live Data"])
+def get_chats(db: Session = Depends(get_db)):
+    return db.query(models.ChatSession).all()
+
+@app.get("/messages", tags=["Live Data"])
+def get_messages(db: Session = Depends(get_db)):
+    return db.query(models.ChatMessage).limit(100).all()
+
+@app.get("/articles", tags=["Live Data"], response_model=List[schemas.DocumentMetadata])
+def get_articles(db: Session = Depends(get_db)):
+    articles = db.query(models.MedicalArticle).all()
+    # Transform to hide the huge vector array
+    return [
+        schemas.DocumentMetadata(
+            id=a.id, 
+            title=a.title, 
+            url=a.url, 
+            category=a.category, 
+            vector_ready=(a.embedding is not None)
+        )
+        for a in articles
+    ]

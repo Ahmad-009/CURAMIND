@@ -1,20 +1,8 @@
-# import modules
-# make the api endpoint
-
-from fastapi import FastAPI, Response
+from fastapi import FastAPI
+from modules.auth.router import router as auth_router
+from core.database import engine
+from core.models import Base
 
 app = FastAPI()
-
-
-@app.get("/")
-def process():
-    return {"status": "OK!!!"}
-
-
-@app.get("/custom")
-def custom_header_endpoint(response: Response):
-    # Add a custom sticker
-    response.headers["X-Project-Name"] = "Curamind"
-    response.headers["X-Developer"] = "Ahmad"
-
-    return {"message": "Look at my headers!"}
+app.include_router(auth_router)
+Base.metadata.create_all(bind=engine)
