@@ -25,7 +25,7 @@ index = faiss.read_index(FAISS_PATH)
 with open(METADATA_PATH, "r", encoding="utf-8") as f:
     metadata = json.load(f)
 
-model = SentenceTransformer(MODEL_NAME)
+#model = SentenceTransformer(MODEL_NAME)
 
 texts = [chunk["text"] for chunk in metadata]
 tokenized_corpus = [text.lower().split() for text in texts]
