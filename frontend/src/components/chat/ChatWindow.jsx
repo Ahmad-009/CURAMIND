@@ -20,7 +20,7 @@ export default function ChatWindow({ messages, isLoading, onSendMessage, onUpdat
       pendingMessages.forEach(async (pendingMsg) => {
         try {
           const token = localStorage.getItem("token");
-          const response = await fetch(`http://localhost:8000/api/chat/evaluations/${pendingMsg.id}`, {
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/chat/evaluations/${pendingMsg.id}`, {
             headers: {
               "Authorization": `Bearer ${token}`
             }
