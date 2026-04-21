@@ -1,0 +1,45 @@
+# --- Python Junk ---
+__pycache__/
+*.py[cod]
+*.so
+backend/app/__pycache__/
+backend/tests/__pycache__/
+
+# --- Virtual Environment ---
+.venv/
+venv/
+env/
+
+# --- Secrets ---
+.env
+.env.local
+
+# --- Testing Cache ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Editor & OS Settings ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- Node/React ---
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.eslintcache
+
+# --- Build Outputs ---
+dist/
+frontend/dist/
+build/
+
+# --- Ingestion Data (Excluding only the final chunks) ---
+backend/app/modules/ingestion/CURAMINDv2/data/raw/
+backend/app/modules/ingestion/CURAMINDv2/data/cleaned/
+
+# --- Docker ---
+docker-compose.override.yml

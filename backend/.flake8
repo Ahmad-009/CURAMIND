@@ -1,0 +1,18 @@
+[flake8]
+# 1. Match Black's line length (88) so they stop fighting
+max-line-length = 88
+
+# 2. Ignore specific errors that clash with Black
+# E203: Whitespace before ':' (Black does this intentionally)
+# E501: Line too long (We handle this with max-line-length above, but this double-checks)
+# W503: Line break before binary operator (Old rule, Black does the opposite)
+extend-ignore = E203, E501, W503
+
+# 3. Exclude things we don't own
+exclude = 
+    .git,
+    __pycache__,
+    build,
+    dist,
+    .venv,
+    venv
