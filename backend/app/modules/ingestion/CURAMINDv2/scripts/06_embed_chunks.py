@@ -36,7 +36,7 @@ def main():
     # LOAD MODEL
     # ==============================
     print("🤖 Loading embedding model...")
-    model = SentenceTransformer(MODEL_NAME)
+    #model = SentenceTransformer(MODEL_NAME)
 
     # ==============================
     # GENERATE EMBEDDINGS (BATCHED)
