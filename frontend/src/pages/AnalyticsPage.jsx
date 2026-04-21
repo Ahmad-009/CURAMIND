@@ -179,7 +179,7 @@ export default function AnalyticsPage() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-        const response = await fetch("http://localhost:8000/api/chat/evaluations/overall-stats", {
+        const response = await fetch("${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/chat/evaluations/overall-stats", {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
@@ -228,7 +228,7 @@ export default function AnalyticsPage() {
     setLoadingDetails(true);
     try {
       const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-      const response = await fetch(`http://localhost:8000/api/chat/evaluations/details?status=${statusParam}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/chat/evaluations/details?status=${statusParam}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"
