@@ -1,12 +1,13 @@
+import os
 import numpy as np
 from typing import List
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
-from sentence_transformers import SentenceTransformer 
+import google.generativeai as genai
 
 from core.models import MedicalArticle 
 
-embedder = SentenceTransformer("NeuML/pubmedbert-base-embeddings") 
+genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 def apply_mmr(query_vector, candidate_vectors, k=5, lambda_mult=0.5):
     query_vector = np.array(query_vector)
@@ -38,8 +39,13 @@ def apply_mmr(query_vector, candidate_vectors, k=5, lambda_mult=0.5):
     return selected
 
 async def retrieve_medical_articles(raw_query: str, db: Session) -> List[dict]:
-    query_vector = embedder.encode(raw_query).tolist() 
-
+    response = genai.embed_content(
+        model="models/text-embedding-004",
+        content=raw_query,
+        task_type="retrieval_query"
+    )
+    query_vector = response['embedding']
+    
     distance_func = MedicalArticle.embedding.cosine_distance(query_vector)
     
     stmt = select(MedicalArticle, distance_func.label('distance')).where(distance_func <= 0.75).order_by(distance_func).limit(15)
