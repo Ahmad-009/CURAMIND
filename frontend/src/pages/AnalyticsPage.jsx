@@ -9,6 +9,8 @@ import {
 
 const FONT_IMPORT = `@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');`;
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 const stagger = {
   hidden:  {},
   visible: { transition: { staggerChildren: 0.1, delayChildren: 0.1 } },
@@ -179,7 +181,7 @@ export default function AnalyticsPage() {
     const fetchStats = async () => {
       try {
         const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-        const response = await fetch("${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/chat/evaluations/overall-stats", {
+        const response = await fetch(`${API_BASE_URL}/api/chat/evaluations/overall-stats`, {
           headers: {
             "Authorization": `Bearer ${token}`,
             "Content-Type": "application/json"
@@ -228,7 +230,7 @@ export default function AnalyticsPage() {
     setLoadingDetails(true);
     try {
       const token = localStorage.getItem("access_token") || localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/chat/evaluations/details?status=${statusParam}`, {
+      const response = await fetch(`${API_BASE_URL}/api/chat/evaluations/details?status=${statusParam}`, {
         headers: {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json"

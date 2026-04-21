@@ -3,6 +3,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import TrustBadge from "../TrustBadge"; 
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
 export default function ChatWindow({ messages, isLoading, onSendMessage, onUpdateMessage }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef(null);
@@ -20,7 +22,7 @@ export default function ChatWindow({ messages, isLoading, onSendMessage, onUpdat
       pendingMessages.forEach(async (pendingMsg) => {
         try {
           const token = localStorage.getItem("token");
-          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/chat/evaluations/${pendingMsg.id}`, {
+          const response = await fetch(`${API_BASE_URL}/api/chat/evaluations/${pendingMsg.id}`, {
             headers: {
               "Authorization": `Bearer ${token}`
             }
