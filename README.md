@@ -1,5 +1,4 @@
-with open("README.md", "w", encoding="utf-8") as f:
-    f.write("""# CURAMIND: Medical RAG Platform
+# CURAMIND: Medical RAG Platform
 
 ## 📌 Overview
 CURAMIND is a production-ready Medical RAG (Retrieval-Augmented Generation) platform designed to provide highly accurate, hyper-personalized clinical insights while strictly minimizing AI hallucinations. 
@@ -31,6 +30,6 @@ The backend is built using a **Modular Monolith** architecture with Python and F
 
 ## 🚀 Local Development
 1. **Clone the repository:**
-   ```bash
+```bash
    git clone [https://github.com/yourusername/curamind.git](https://github.com/yourusername/curamind.git)
    cd curamind
